@@ -4,15 +4,9 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input , Output , State
 import plotly.express as px
-import json
-import plotly.graph_objects as go
 
 # ----------------------- DATA PROCESSMENT
 
-locations_file_path = 'data/data_europe.geojson'
-
-with open(locations_file_path, encoding='utf-8', errors='ignore') as j:
-    contents = json.load(j, strict=False)
 
 df = pd.read_csv('data/suicides.csv')
 df = df.rename(columns={'suicides/100k pop':'suicides/100k_pop'})
