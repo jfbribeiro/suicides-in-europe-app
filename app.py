@@ -2,10 +2,17 @@ import pandas as pd
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import numpy as np
 from dash.dependencies import Input , Output , State
 import plotly.express as px
+import json
+import plotly.graph_objects as go
 
+# ----------------------- DATA PROCESSMENT
+
+locations_file_path = 'data/data_europe.geojson'
+
+with open(locations_file_path, encoding='utf-8', errors='ignore') as j:
+    contents = json.load(j, strict=False)
 
 df = pd.read_csv('data/suicides.csv')
 df = df.rename(columns={'suicides/100k pop':'suicides/100k_pop'})
@@ -57,13 +64,11 @@ options = [
         {"label": "Malta", "value": "Malta"},
         {"label": "Iceland", "value": "Iceland"},
         {"label": "Cyprus", "value": "Cyprus"},
-
     ]
 
 years = []
 
-
-############ BUILD APP ######
+#---------------------  BUILD APP LAYOUT
 app = dash.Dash(__name__)
 server = app.server
 app.layout = html.Div([
@@ -72,6 +77,52 @@ app.layout = html.Div([
         html.H1('SUICIDES IN EUROPE IN THE BEGGINING OF CENTURY XXI')
         ], className='Title'),
 
+
+    html.Br(), html.Br(), html.Br(),
+
+    html.Div([
+            dcc.Graph(id="europe_map")
+    ]),
+
+    html.Br(),html.Br(),html.Br(),
+
+    dcc.Slider(
+        id='slider_date',
+        min=2000,
+        max=2015,
+        step=1,
+        value=2000,
+        marks={
+          2000: {'label': '2000', 'style': {'color': '#77b0b1'}},
+          2001: {'label': '2001', 'style': {'color': '#77b0b1'}},
+          2002: {'label': '2002', 'style': {'color': '#77b0b1'}},
+          2003: {'label': '2003', 'style': {'color': '#77b0b1'}},
+          2004: {'label': '2004', 'style': {'color': '#77b0b1'}},
+          2005: {'label': '2005', 'style': {'color': '#77b0b1'}},
+          2006: {'label': '2006', 'style': {'color': '#77b0b1'}},
+          2007: {'label': '2007', 'style': {'color': '#77b0b1'}},
+          2008: {'label': '2008', 'style': {'color': '#77b0b1'}},
+          2009: {'label': '2009', 'style': {'color': '#77b0b1'}},
+          2010: {'label': '2010', 'style': {'color': '#77b0b1'}},
+          2011: {'label': '2011', 'style': {'color': '#77b0b1'}},
+          2012: {'label': '2012', 'style': {'color': '#77b0b1'}},
+          2013: {'label': '2013', 'style': {'color': '#77b0b1'}},
+          2014: {'label': '2014', 'style': {'color': '#77b0b1'}},
+          2015: {'label': '2015', 'style': {'color': '#77b0b1'}},
+        }
+    ) ,
+    html.Br(), html.Br(), html.Br(),
+
+    dcc.Dropdown(
+        id = 'multi_country_selection',
+        options=options,
+        value=['Portugal'],
+        multi=True
+    ) ,
+
+    html.Div([
+        dcc.Graph(id="multi_suicide_number"),
+    ]),
 
 
     html.Div([
@@ -96,14 +147,72 @@ app.layout = html.Div([
     ]),
 
     html.Div([
+        dcc.Graph(id="age_plot"),
         dcc.Graph(id="gender_pie")
-
-    ])
-
-
+    ],id='hided_plots' , style={'display': 'none'})
 
 
     ])
+
+
+# ----------------------- CALLBACK FUNCTIONS
+
+@app.callback(
+    Output('multi_suicide_number' , "figure"),
+    [Input(component_id='multi_country_selection', component_property='value')])
+def suicides_number_per_country(countries):
+    if len(countries) > 0 :
+        map_df = df_europe_country_year_grouped.loc[(df_europe_country_year_grouped.country.isin(countries)) & (df_europe_country_year_grouped['year'] > 1999) & (df_europe_country_year_grouped['year'] < 2016)]
+
+        fig = px.line(map_df, x='year', y='suicides_no', color='country')
+        return fig
+    else:
+        return px.line()
+
+
+@app.callback(
+    Output('europe_map' , "figure"),
+    [Input(component_id='slider_date', component_property='value')])
+def generate_map_europe(date_value):
+
+    map_df = df_europe_country_year_grouped.loc[(df_europe_country_year_grouped.year == date_value) ]
+
+    fig = px.choropleth(data_frame=map_df, locationmode='country names', hover_data=['country'] , locations=map_df['country'], scope='europe' , color=map_df['suicides/100k_pop'],color_continuous_scale='Viridis' )
+
+
+
+    return fig
+
+@app.callback(
+    Output(component_id='hided_plots', component_property='style'),
+    [Input(component_id='dropdown-years', component_property='value')])
+def show_2_graphs(year):
+
+    if year == '':
+        return  {'display': 'none'}
+    else:
+        return {'display': 'block'}
+
+@app.callback(
+    Output('age_plot' , "figure"),
+    [Input(component_id='dropdown-years', component_property='value'),
+     Input(component_id='dropdown-country', component_property='value')])
+def generate_age_plot(dropdown_years , dropdown_country):
+
+    if dropdown_years != '' and dropdown_country != '':
+        dff = df_europe.loc[(df_europe.year==dropdown_years) & (df_europe.country==dropdown_country)]
+
+        plot_age = px.bar(
+            data_frame=dff,
+            x=dff.age,
+            y=dff.suicides_no,
+            color=dff.sex,
+        )
+
+        return plot_age
+
+    return px.pie()
+
 
 @app.callback(
     Output('gender_pie' , "figure"),
