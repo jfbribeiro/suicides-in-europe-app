@@ -16,7 +16,7 @@ european_countries = ['Russian Federation','Germany','United Kingdom','France','
                           'Estonia',  'Montenegro' ,  'Luxembourg', 'Malta', 'Iceland' ]
 df_europe = df.copy()
 df_europe = df_europe.loc[df_europe['country'].isin(european_countries)]
-df_europe_country_year_grouped =  df_europe.groupby(['country','year'])[['suicides_no','population','suicides/100k_pop']].agg('sum').reset_index()
+df_europe_country_year_grouped =  df_europe.groupby(['country','year'])[['suicides_no','population']].agg('sum').reset_index()
 df_europe_country_year_grouped.head()
 
 options = [
@@ -212,6 +212,7 @@ app.layout = html.Div([
 
 # ----------------------- CALLBACK FUNCTIONS
 
+#--- DISPLAY COUNTRY INFORMATION
 @app.callback(
     Output(component_id='country_population', component_property='children'),
     Output(component_id='country_gdp' ,component_property='children'),
@@ -228,6 +229,7 @@ def update_country_info(year,country):
     else:
         return '','', {'display': 'none' } , {'display': 'none' } 
 
+#-- CALLBACK FOR MULTIPLES COUNTRIES VISUALIZATION
 @app.callback(
     Output('multi_suicide_number' , "figure"),
     [Input(component_id='multi_country_selection', component_property='value')])
@@ -251,15 +253,16 @@ def suicides_number_per_country(countries):
         )
         return fig
 
-
+#--- GENERATE CHLOROPLETH MAP CALLBACK
 @app.callback(
     Output('europe_map' , "figure"),
     [Input(component_id='slider_date', component_property='value')])
 def generate_map_europe(date_value):
 
     map_df = df_europe_country_year_grouped.loc[(df_europe_country_year_grouped.year == date_value) ]
+    map_df['suicides_per_100k'] =  (100000 * df_europe_country_year_grouped['suicides_no']) / df_europe_country_year_grouped['population']
 
-    fig = px.choropleth(data_frame=map_df, locationmode='country names', labels={'suicides/100k_pop':'Suicides per 100K Habitants ' , 'country':'Country '}  , hover_data=['country'] , locations=map_df['country'], scope='europe' , color=map_df['suicides/100k_pop'],color_continuous_scale='orrd' )
+    fig = px.choropleth(data_frame=map_df, locationmode='country names', labels={'suicides_per_100k':'Suicides per 100K Habitants ' , 'country':'Country '}  , hover_data=['country'] , locations=map_df['country'], scope='europe' , color=map_df['suicides_per_100k'],color_continuous_scale='orrd' )
     fig.update_layout(
         plot_bgcolor=colors['background'],
         paper_bgcolor=colors['background'],
@@ -271,16 +274,7 @@ def generate_map_europe(date_value):
 
     return fig
 
-#@app.callback(
-#    Output(component_id='hided_plots', component_property='style'),
-#    [Input(component_id='dropdown-years', component_property='value')])
-#def show_2_graphs(year):
-
-#    if year == '':
-#        return  {'display': 'none' }
-#    else:
- #       return {'display': 'block' ,  'display': 'flex' , 'justify-content': 'space-around'}
-
+#---- GENERARE AGE DISTRIBUTION PLOT
 @app.callback(
     Output('age_plot' , "figure"),
     Output(component_id='age_plot', component_property='style') ,
@@ -311,7 +305,7 @@ def generate_age_plot(dropdown_years , dropdown_country):
 
     return px.pie() , {'display': 'none'}
 
-
+#--- GENERATE GENDER PIE CALLBACK
 @app.callback(
     Output('gender_pie' , "figure"),
     Output(component_id='gender_pie', component_property='style') ,
@@ -342,6 +336,7 @@ def generate_gender_pie(dropdown_years , dropdown_country):
 
     return px.pie() , {'display': 'none'}
 
+#--- SHOW YEARS AVAILABLE FOR EACH COUNTRY IN 'COUNTRY INFORMATION' SECTION
 @app.callback(
    Output(component_id='dropdown-years', component_property='style'),
    Output(component_id='dropdown-years', component_property='options'),
