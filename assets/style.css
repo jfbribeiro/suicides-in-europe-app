@@ -90,11 +90,10 @@
 }
 
 .title{
-        textAlign: center;
         color: #9B1E03;
         font-family:Papyrus;
         font-size:30px;
-        margin-left: 5%;
+        width=80%;
 }
 
 .subTitle{
@@ -103,4 +102,18 @@
         font-family:Papyrus;
         font-size:18px;
         margin-left: 5%;
+}
+
+.reference{
+        color: #9B1E03;
+        font-family:Papyrus;
+        font-size:18px;
+        margin-left: 45%;
+}
+
+.information{
+        color: #fff
+        font-family:Papyrus;
+        font-size:18px;
+
 }

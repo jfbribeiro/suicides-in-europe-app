@@ -75,9 +75,12 @@ app.layout = html.Div([
     html.Br(), html.Br(),
     html.Div([
         html.H1('SUICIDES IN EUROPE IN THE BEGGINING OF CENTURY XXI')
-        ], className='title'),
-
+        ], className='title' ,style={'textAlign':'center'}),
+    html.Div([
+        html.P('This web application was developed within the scope of the "Data Visualization" course to explore in an interactive way the evolution of suicides in Europe at the beginning of the current century.')
+    ],style={'textAlign':'center'}),
     html.Br(), html.Br(), html.Br(),
+
     #------ PARENT DIV : CONTAIN CHLOROPLET MAP AND MULTIPLE COMPARISION PLOT
     html.Div([
 
@@ -142,6 +145,7 @@ app.layout = html.Div([
 
     }),
 
+    #---- Country Information Dropdowns
     html.Div([
         html.Div([
         dcc.Dropdown(
@@ -165,23 +169,39 @@ app.layout = html.Div([
         ], style= {'display': 'block' , 'margin-left': '2%' , 'width':'20%' , 'float':'left'}
         )
     ], style={'width':'80%'}),
+     html.Br(), html.Br(),
+
+    #---- Country Information
+    html.Div([
+        html.Div([
+           html.P('Country Population :' , className='reference')  ,
+           html.P(  id='country_population', className='information')  ,
+        ],style={'display':'flex'}) ,
+        html.Div([
+           html.P('Country GDP Per Capita ($): ' , className='reference')  ,
+           html.P(id='country_gdp' , className='information' )  ,
+        ],style={'display':'flex'}) ,
+    ],id='information_div' , style={'display': 'none' }) ,
+
 
     html.Br(), html.Br(), html.Br(),
 
+    #--- AGE AND GENDER PLOTS
     html.Div([
     html.Div([
         dcc.Graph(id="age_plot"),
-    ]),
+    ], className='right'),
     html.Div([
         dcc.Graph(id="gender_pie")
-    ]),
-    ],id='hided_plots' , className='parent' ,style={'display': 'none'}),
+    ], className='right'),
+    ],id='hided_plots' ),
 
     html.Br(), html.Br(), html.Br(),
 
+    #--- FOOTER
     html.Div([
     html.P('Application developed by João Francisco Ribeiro'),
-    dcc.Link('Used dataset can be found here', href='https://www.kaggle.com/russellyates88/suicide-rates-overview-1985-to-2016'),
+    html.A('Used dataset can be found here', href='https://www.kaggle.com/russellyates88/suicide-rates-overview-1985-to-2016' , target='_blank' ),
     ],style={'textAlign': 'center'}),
 
     html.Br(),
@@ -191,16 +211,29 @@ app.layout = html.Div([
 # ----------------------- CALLBACK FUNCTIONS
 
 @app.callback(
+    Output(component_id='country_population', component_property='children'),
+    Output(component_id='country_gdp' ,component_property='children'),
+    Output(component_id='information_div' , component_property='style'),
+    Output(component_id='hided_plots' , component_property='style'),
+    [Input(component_id='dropdown-years', component_property='value'),
+     Input(component_id='dropdown-country', component_property='value')])
+def update_country_info(year,country):
+
+    if year != '' and country != '':
+        pop = df_europe_country_year_grouped.loc[ (df_europe_country_year_grouped.year == year) & (df_europe_country_year_grouped.country == country)]['population'].astype(str).iloc[0]
+        gdp = df_europe.loc[ (df_europe.year == year) & (df_europe.country == country)]['gdp_per_capita ($)'].astype(str).iloc[0]
+        return pop , gdp , {'display': 'block' }  , {'display': 'block', 'display': 'flex', 'justify-content': 'space-around' }
+    else:
+        return '','', {'display': 'none' } , {'display': 'none' } 
+
+@app.callback(
     Output('multi_suicide_number' , "figure"),
     [Input(component_id='multi_country_selection', component_property='value')])
 def suicides_number_per_country(countries):
-
-
-
     if len(countries) > 0 :
         map_df = df_europe_country_year_grouped.loc[(df_europe_country_year_grouped.country.isin(countries)) & (df_europe_country_year_grouped['year'] > 1999) & (df_europe_country_year_grouped['year'] < 2016)]
 
-        fig = px.line(map_df, x='year', y='suicides_no', color='country')
+        fig = px.line(map_df, x='year', y='suicides_no', color='country' , labels={'suicides_no':'Number of Suicides ', 'year': 'Year ','country':'Country '})
         fig.update_layout(
             plot_bgcolor=colors['background'],
             paper_bgcolor=colors['background'],
@@ -224,12 +257,12 @@ def generate_map_europe(date_value):
 
     map_df = df_europe_country_year_grouped.loc[(df_europe_country_year_grouped.year == date_value) ]
 
-    fig = px.choropleth(data_frame=map_df, locationmode='country names', hover_data=['country'] , locations=map_df['country'], scope='europe' , color=map_df['suicides/100k_pop'],color_continuous_scale='orrd' )
+    fig = px.choropleth(data_frame=map_df, locationmode='country names', labels={'suicides/100k_pop':'Suicides per 100K Habitants ' , 'country':'Country '}  , hover_data=['country'] , locations=map_df['country'], scope='europe' , color=map_df['suicides/100k_pop'],color_continuous_scale='orrd' )
     fig.update_layout(
         plot_bgcolor=colors['background'],
         paper_bgcolor=colors['background'],
         font_color=colors['title'],
-        margin=dict(t=0, b=0, l=0, r=0),
+        margin={"r":0,"t":0,"l":0,"b":0},
         geo=dict(bgcolor='rgba(0,0,0,0)')
     )
 
@@ -242,13 +275,13 @@ def generate_map_europe(date_value):
 def show_2_graphs(year):
 
     if year == '':
-        return  {'display': 'none' ,  'display': 'flex' , 'justify-content': 'space-around'}
+        return  {'display': 'none' }
     else:
-        return {'display': 'block',  'display': 'flex' , 'justify-content': 'space-around'}
+        return {'display': 'block' ,  'display': 'flex' , 'justify-content': 'space-around'}
 
 @app.callback(
     Output('age_plot' , "figure"),
-    Output(component_id='age_plot', component_property= "style"),
+    Output(component_id='age_plot', component_property='style') ,
     [Input(component_id='dropdown-years', component_property='value'),
      Input(component_id='dropdown-country', component_property='value')])
 def generate_age_plot(dropdown_years , dropdown_country):
@@ -261,6 +294,7 @@ def generate_age_plot(dropdown_years , dropdown_country):
             x=dff.age,
             y=dff.suicides_no,
             color=dff.sex,
+            labels={'suicides_no':'Number of Suicides ', 'age': 'Age Group ','sex':'Gender '}
         )
 
         plot_age.update_layout(
@@ -271,14 +305,14 @@ def generate_age_plot(dropdown_years , dropdown_country):
             geo=dict(bgcolor='rgba(0,0,0,0)')
         )
 
-        return plot_age , { 'border': '1px solid lightgray', 'width': '48%'}
+        return plot_age  , {'display': 'block', 'width':'45%'}
 
     return px.pie() , {'display': 'none'}
 
 
 @app.callback(
     Output('gender_pie' , "figure"),
-    Output(component_id='gender_pie' , component_property="style"),
+    Output(component_id='gender_pie', component_property='style') ,
     [Input(component_id='dropdown-years', component_property='value'),
      Input(component_id='dropdown-country', component_property='value')])
 def generate_gender_pie(dropdown_years , dropdown_country):
@@ -291,6 +325,7 @@ def generate_gender_pie(dropdown_years , dropdown_country):
             names=dff.sex,
             values=dff.suicides_no,
             hole=.3,
+            labels={'suicides_no':'Number of Suicides ', 'age': 'Age Group ','sex':'Gender '} 
         )
 
         piechart.update_layout(
@@ -300,7 +335,7 @@ def generate_gender_pie(dropdown_years , dropdown_country):
 
         )
 
-        return piechart , { 'border': '1px solid lightgray', 'width': '48%'}
+        return piechart , {'display': 'block','width':'45%'}
 
     return px.pie() , {'display': 'none'}
 
