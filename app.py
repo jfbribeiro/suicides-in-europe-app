@@ -189,9 +189,11 @@ app.layout = html.Div([
     #--- AGE AND GENDER PLOTS
     html.Div([
     html.Div([
+        html.H1('Age Group Distribution',className='reference'),
         dcc.Graph(id="age_plot"),
     ], className='right'),
     html.Div([
+        html.H1('Gender Variation',className='reference'),
         dcc.Graph(id="gender_pie")
     ], className='right'),
     ],id='hided_plots' ),
@@ -301,7 +303,7 @@ def generate_age_plot(dropdown_years , dropdown_country):
             plot_bgcolor=colors['background'],
             paper_bgcolor=colors['background'],
             font_color=colors['title'],
-            margin=dict(t=0, b=0, l=0, r=0),
+            margin={"r":0,"t":0,"l":0,"b":0},
             geo=dict(bgcolor='rgba(0,0,0,0)')
         )
 
@@ -332,7 +334,8 @@ def generate_gender_pie(dropdown_years , dropdown_country):
             plot_bgcolor=colors['background'],
             paper_bgcolor=colors['background'],
             font_color=colors['title'],
-
+            margin={"r":0,"t":0,"l":0,"b":0},
+            geo=dict(bgcolor='rgba(0,0,0,0)')
         )
 
         return piechart , {'display': 'block','width':'45%'}
