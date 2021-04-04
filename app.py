@@ -269,15 +269,15 @@ def generate_map_europe(date_value):
 
     return fig
 
-@app.callback(
-    Output(component_id='hided_plots', component_property='style'),
-    [Input(component_id='dropdown-years', component_property='value')])
-def show_2_graphs(year):
+#@app.callback(
+#    Output(component_id='hided_plots', component_property='style'),
+#    [Input(component_id='dropdown-years', component_property='value')])
+#def show_2_graphs(year):
 
-    if year == '':
-        return  {'display': 'none' }
-    else:
-        return {'display': 'block' ,  'display': 'flex' , 'justify-content': 'space-around'}
+#    if year == '':
+#        return  {'display': 'none' }
+#    else:
+ #       return {'display': 'block' ,  'display': 'flex' , 'justify-content': 'space-around'}
 
 @app.callback(
     Output('age_plot' , "figure"),
