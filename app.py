@@ -62,24 +62,34 @@ options = [
 
 years = []
 
+colors = {
+    'background': '#BBBABA',
+    'title': '#9B1E03',
+    'text': '#000000'
+}
+
 #---------------------  BUILD APP LAYOUT
 app = dash.Dash(__name__)
 server = app.server
 app.layout = html.Div([
-
+    html.Br(), html.Br(),
     html.Div([
         html.H1('SUICIDES IN EUROPE IN THE BEGGINING OF CENTURY XXI')
-        ], className='Title'),
-
+        ], className='title'),
 
     html.Br(), html.Br(), html.Br(),
+    #------ PARENT DIV : CONTAIN CHLOROPLET MAP AND MULTIPLE COMPARISION PLOT
+    html.Div([
 
+    #---- LEFT PANEL
+    html.Div([
     html.Div([
             dcc.Graph(id="europe_map")
     ]),
 
     html.Br(),html.Br(),html.Br(),
 
+    html.Div([
     dcc.Slider(
         id='slider_date',
         min=2000,
@@ -87,66 +97,95 @@ app.layout = html.Div([
         step=1,
         value=2000,
         marks={
-          2000: {'label': '2000', 'style': {'color': '#77b0b1'}},
-          2001: {'label': '2001', 'style': {'color': '#77b0b1'}},
-          2002: {'label': '2002', 'style': {'color': '#77b0b1'}},
-          2003: {'label': '2003', 'style': {'color': '#77b0b1'}},
-          2004: {'label': '2004', 'style': {'color': '#77b0b1'}},
-          2005: {'label': '2005', 'style': {'color': '#77b0b1'}},
-          2006: {'label': '2006', 'style': {'color': '#77b0b1'}},
-          2007: {'label': '2007', 'style': {'color': '#77b0b1'}},
-          2008: {'label': '2008', 'style': {'color': '#77b0b1'}},
-          2009: {'label': '2009', 'style': {'color': '#77b0b1'}},
-          2010: {'label': '2010', 'style': {'color': '#77b0b1'}},
-          2011: {'label': '2011', 'style': {'color': '#77b0b1'}},
-          2012: {'label': '2012', 'style': {'color': '#77b0b1'}},
-          2013: {'label': '2013', 'style': {'color': '#77b0b1'}},
-          2014: {'label': '2014', 'style': {'color': '#77b0b1'}},
-          2015: {'label': '2015', 'style': {'color': '#77b0b1'}},
+          2000: {'label': '2000', 'style': {'color': colors['title']}},
+          2001: {'label': '2001', 'style': {'color': colors['title']}},
+          2002: {'label': '2002', 'style': {'color': colors['title']}},
+          2003: {'label': '2003', 'style': {'color': colors['title']}},
+          2004: {'label': '2004', 'style': {'color': colors['title']}},
+          2005: {'label': '2005', 'style': {'color': colors['title']}},
+          2006: {'label': '2006', 'style': {'color': colors['title']}},
+          2007: {'label': '2007', 'style': {'color': colors['title']}},
+          2008: {'label': '2008', 'style': {'color': colors['title']}},
+          2009: {'label': '2009', 'style': {'color': colors['title']}},
+          2010: {'label': '2010', 'style': {'color': colors['title']}},
+          2011: {'label': '2011', 'style': {'color': colors['title']}},
+          2012: {'label': '2012', 'style': {'color': colors['title']}},
+          2013: {'label': '2013', 'style': {'color': colors['title']}},
+          2014: {'label': '2014', 'style': {'color': colors['title']}},
+          2015: {'label': '2015', 'style': {'color': colors['title']}},
         }
-    ) ,
-    html.Br(), html.Br(), html.Br(),
+    )], style={'margin-left': '10%','margin-right':'10%'}) ,
 
+    html.Br(), html.Br(), html.Br(),
+    ], className='left'),
+
+    #---- RIGHT PANEL
+    html.Div([
     dcc.Dropdown(
         id = 'multi_country_selection',
         options=options,
         value=['Portugal'],
         multi=True
-    ) ,
-
+    ),
     html.Div([
         dcc.Graph(id="multi_suicide_number"),
     ]),
+    ], className='right'),
+
+    ], className='parent'),
 
 
     html.Div([
+        html.H1('Country Information')
+        ], className='subTitle', style={
+
+
+    }),
+
+    html.Div([
+        html.Div([
         dcc.Dropdown(
             id = 'dropdown-country',
+            className= 'dropdown_style',
             options=options,
             value = '',
             placeholder='Country'
         ),
-        html.Br(),
-        # Create Div to place a conditionally visible element inside
+        ], style={'width':'20%' , 'margin-left': '5%' , 'float':'left'}),
+
+
         html.Div([
-        # Create element to hide/show, in this case an 'Input Component'
             dcc.Dropdown(
                 id = 'dropdown-years',
                 placeholder = 'Years',
                 options=years,
+                className= 'dropdown_style',
                 value=''
             )
-        ], style= {'display': 'block'} # <-- This is the line that will be changed by the dropdown callback
+        ], style= {'display': 'block' , 'margin-left': '2%' , 'width':'20%' , 'float':'left'}
         )
-    ]),
+    ], style={'width':'80%'}),
+
+    html.Br(), html.Br(), html.Br(),
 
     html.Div([
+    html.Div([
         dcc.Graph(id="age_plot"),
+    ]),
+    html.Div([
         dcc.Graph(id="gender_pie")
-    ],id='hided_plots' , style={'display': 'none'})
+    ]),
+    ],id='hided_plots' , className='parent' ,style={'display': 'none'}),
 
+    html.Br(), html.Br(), html.Br(),
 
-    ])
+    html.Div([
+    html.P('Application developed by João Francisco Ribeiro'),
+    dcc.Link('Used dataset can be found here', href='https://www.kaggle.com/russellyates88/suicide-rates-overview-1985-to-2016'),
+    ],style={'textAlign': 'center'}),
+
+    html.Br(),
+    ],className='fullscreen')
 
 
 # ----------------------- CALLBACK FUNCTIONS
@@ -155,13 +194,27 @@ app.layout = html.Div([
     Output('multi_suicide_number' , "figure"),
     [Input(component_id='multi_country_selection', component_property='value')])
 def suicides_number_per_country(countries):
+
+
+
     if len(countries) > 0 :
         map_df = df_europe_country_year_grouped.loc[(df_europe_country_year_grouped.country.isin(countries)) & (df_europe_country_year_grouped['year'] > 1999) & (df_europe_country_year_grouped['year'] < 2016)]
 
         fig = px.line(map_df, x='year', y='suicides_no', color='country')
+        fig.update_layout(
+            plot_bgcolor=colors['background'],
+            paper_bgcolor=colors['background'],
+            font_color=colors['title']
+        )
         return fig
     else:
-        return px.line()
+        fig = px.line()
+        fig.update_layout(
+            plot_bgcolor=colors['background'],
+            paper_bgcolor=colors['background'],
+            font_color=colors['title']
+        )
+        return fig
 
 
 @app.callback(
@@ -171,8 +224,14 @@ def generate_map_europe(date_value):
 
     map_df = df_europe_country_year_grouped.loc[(df_europe_country_year_grouped.year == date_value) ]
 
-    fig = px.choropleth(data_frame=map_df, locationmode='country names', hover_data=['country'] , locations=map_df['country'], scope='europe' , color=map_df['suicides/100k_pop'],color_continuous_scale='Viridis' )
-
+    fig = px.choropleth(data_frame=map_df, locationmode='country names', hover_data=['country'] , locations=map_df['country'], scope='europe' , color=map_df['suicides/100k_pop'],color_continuous_scale='orrd' )
+    fig.update_layout(
+        plot_bgcolor=colors['background'],
+        paper_bgcolor=colors['background'],
+        font_color=colors['title'],
+        margin=dict(t=0, b=0, l=0, r=0),
+        geo=dict(bgcolor='rgba(0,0,0,0)')
+    )
 
 
     return fig
@@ -183,12 +242,13 @@ def generate_map_europe(date_value):
 def show_2_graphs(year):
 
     if year == '':
-        return  {'display': 'none'}
+        return  {'display': 'none' ,  'display': 'flex' , 'justify-content': 'space-around'}
     else:
-        return {'display': 'block'}
+        return {'display': 'block',  'display': 'flex' , 'justify-content': 'space-around'}
 
 @app.callback(
     Output('age_plot' , "figure"),
+    Output(component_id='age_plot', component_property= "style"),
     [Input(component_id='dropdown-years', component_property='value'),
      Input(component_id='dropdown-country', component_property='value')])
 def generate_age_plot(dropdown_years , dropdown_country):
@@ -203,13 +263,22 @@ def generate_age_plot(dropdown_years , dropdown_country):
             color=dff.sex,
         )
 
-        return plot_age
+        plot_age.update_layout(
+            plot_bgcolor=colors['background'],
+            paper_bgcolor=colors['background'],
+            font_color=colors['title'],
+            margin=dict(t=0, b=0, l=0, r=0),
+            geo=dict(bgcolor='rgba(0,0,0,0)')
+        )
 
-    return px.pie()
+        return plot_age , { 'border': '1px solid lightgray', 'width': '48%'}
+
+    return px.pie() , {'display': 'none'}
 
 
 @app.callback(
     Output('gender_pie' , "figure"),
+    Output(component_id='gender_pie' , component_property="style"),
     [Input(component_id='dropdown-years', component_property='value'),
      Input(component_id='dropdown-country', component_property='value')])
 def generate_gender_pie(dropdown_years , dropdown_country):
@@ -224,9 +293,16 @@ def generate_gender_pie(dropdown_years , dropdown_country):
             hole=.3,
         )
 
-        return piechart
+        piechart.update_layout(
+            plot_bgcolor=colors['background'],
+            paper_bgcolor=colors['background'],
+            font_color=colors['title'],
 
-    return px.pie()
+        )
+
+        return piechart , { 'border': '1px solid lightgray', 'width': '48%'}
+
+    return px.pie() , {'display': 'none'}
 
 @app.callback(
    Output(component_id='dropdown-years', component_property='style'),
